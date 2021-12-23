@@ -25,7 +25,7 @@ body {
   linear-gradient(140deg, rgb(90, 252, 90) 0% 60%, rgba(141, 14, 14, 0) 20% 100%),
   linear-gradient(160deg, rgb(33, 159, 233) 0% 80%, rgba(141, 14, 14, 0) 20% 100%),
   linear-gradient(160deg,rgb(255, 72, 148) 0% 100%, rgba(141, 14, 14, 0) 20% 100%);
-  color: rgb(0, 0, 0);
+  color: rgb(255, 255, 255);
 }
 
 /* Increase the font size of the heading */
@@ -39,7 +39,6 @@ body {
   flex: 70%;
   background-color: rgb(255, 255, 255);
   padding: 20px;
-  padding-left: 50px;
 }
 
 /* Responsive layout - when the screen is less than 700px wide, make the two columns stack on top of each other instead of next to each other */
@@ -50,7 +49,7 @@ body {
 }
 
 </style>
-<script src="iro.min.js"></script>
+<script src="iromin.js"></script>
 
 <script>
   
@@ -90,11 +89,10 @@ colorPicker.on('color:change', function(color) {
 
 <div class="header">
   <h1>FANCY LIGHT</h1>
-  <p>A <b>fancy</b> light created with love <3</p>
 </div>
 
 <div class="main">
-    <h2 id ="settingText">Einstellungen:</h2>
+    <h2 id ="settingText">Farbauswahl:</h2>
     <div id="picker"></div>
 </div>
 

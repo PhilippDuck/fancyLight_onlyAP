@@ -34,9 +34,7 @@ void setup() {
   server.serveStatic("/", LittleFS, "/index.html");
   server.begin();
   Serial.println("HTTP server started");
-
-
-
+  server.serveStatic("/iromin.js", LittleFS, "/iromin.js");
 }
 
 void loop() {
