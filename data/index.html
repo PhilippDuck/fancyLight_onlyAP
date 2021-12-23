@@ -48,6 +48,69 @@ body {
   }
 }
 
+/* The switch - the box around the slider */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
 </style>
 <script src="iromin.js"></script>
 
@@ -60,38 +123,70 @@ var colorPicker = new iro.ColorPicker("#picker", {
     // Set the initial color to pure red
     layout: [
     { 
-      component: iro.ui.Box,
-    },
-    { 
       component: iro.ui.Slider,
       options: {
         // can also be 'saturation', 'value', 'red', 'green', 'blue', 'alpha' or 'kelvin'
         sliderType: 'hue'
       }
     },
+    { 
+      component: iro.ui.Box,
+    },
   ],
 
   });
+
+  function sendColor() {
+			var fancyMode = document.getElementById("fancyModeSwitch").checked;
+			var color = colorPicker.color.hexString;
+			var r = parseInt("0x" + color.substr(1,2));
+			var g = parseInt("0x" + color.substr(3,2));
+			var b = parseInt("0x" + color.substr(5,2));
+
+			console.log(color);
+			console.log(fancyMode);
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET","sendColor?r="+ r + "&g=" + g + "&b=" + b + "&fancyMode=" + fancyMode, true);
+			xhr.onload = function() {
+				if (xhr.readyState === 4) {
+					if (xhr.status === 200) {
+						console.log('Antwort OK ' + xhr.responseText);
+					}
+					else if (xhr.status !== 200) {
+						console.log('Request failed.  Returned status of ' + xhr.status);
+					}
+				ajaxAktiv=false;
+				sliderSend = false;
+				}
+			};
+		    xhr.send();
+		}
 
 // listen to a color picker's color:change event
 // color:change callbacks receive the current color
 colorPicker.on('color:change', function(color) {
   // log the current color as a HEX string
   console.log(color.hexString)
-  document.getElementById("settingText").style.color = color.hexString;
+  document.getElementById("headText").style.color = color.hexString;
 });
-
-
+colorPicker.on("input:end", sendColor);
 
 </script>
 </head>
 <body>
 
 <div class="header">
-  <h1>FANCY LIGHT</h1>
+  <h1 id="headText">FANCY LIGHT</h1>
 </div>
 
 <div class="main">
+    <h2>Fancymode:</h2>
+    <p>Der Fancymode holt das volle Potential aus deinem Fancylight<br>
+    und lässt es in wundervollen Regenbogenfarben leuchten.</p>
+    <label class="switch">
+      <input type="checkbox" id="fancyModeSwitch" onclick="sendColor()">
+      <span class="slider round"></span>
+    </label>
     <h2 id ="settingText">Farbauswahl:</h2>
     <div id="picker"></div>
 </div>
