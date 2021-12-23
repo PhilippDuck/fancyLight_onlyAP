@@ -22,9 +22,9 @@ ESP8266WebServer server(80);
 struct Config
 {
   String fancyMode;
-  int red;
-  int grn;
-  int blu;
+  int red = 255;
+  int grn = 255;
+  int blu = 255;
 };
 
 const char *nameConfigFile = "/config.txt";
