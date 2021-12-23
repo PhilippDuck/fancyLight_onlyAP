@@ -12,13 +12,13 @@
 
 /* Style the body */
 body {
-  font-family: Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   margin: 0;
 }
 
 /* Header/logo Title */
 .header {
-  padding: 10px;
+  padding: 5px;
   text-align: center;
   background: linear-gradient(75deg, rgb(255, 75, 75) 20%,rgba(141, 14, 14, 0) 20% 100%),
   linear-gradient(100deg, rgb(255, 226, 60) 0% 40%,rgba(141, 14, 14, 0) 20% 100%),
@@ -31,6 +31,7 @@ body {
 /* Increase the font size of the heading */
 .header h1 {
   font-size: 40px;
+  -webkit-text-stroke: 1px black; /* width and color */
 }
 
 /* Main column */
@@ -115,6 +116,9 @@ input:checked + .slider:before {
 <script src="iromin.js"></script>
 
 <script>
+
+// On first load or reload get config
+window.onload = getConfig;
   
 var colorPicker = new iro.ColorPicker("#picker", {
     // Set the size of the color picker
@@ -136,21 +140,45 @@ var colorPicker = new iro.ColorPicker("#picker", {
 
   });
 
-  function sendColor() {
-			var fancyMode = document.getElementById("fancyModeSwitch").checked;
-			var color = colorPicker.color.hexString;
-			var r = parseInt("0x" + color.substr(1,2));
-			var g = parseInt("0x" + color.substr(3,2));
-			var b = parseInt("0x" + color.substr(5,2));
+function sendColor() {
+    var fancyMode = document.getElementById("fancyModeSwitch").checked;
+    var color = colorPicker.color.hexString;
+    var r = parseInt("0x" + color.substr(1,2));
+    var g = parseInt("0x" + color.substr(3,2));
+    var b = parseInt("0x" + color.substr(5,2));
 
-			console.log(color);
-			console.log(fancyMode);
+    console.log(color);
+    console.log(fancyMode);
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET","sendColor?r="+ r + "&g=" + g + "&b=" + b + "&fancyMode=" + fancyMode, true);
+    xhr.onload = function() {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
+          console.log('Antwort OK ' + xhr.responseText);
+        }
+        else if (xhr.status !== 200) {
+          console.log('Request failed.  Returned status of ' + xhr.status);
+        }
+      ajaxAktiv=false;
+      sliderSend = false;
+      }
+    };
+      xhr.send();
+}
+
+function getConfig() {
+			console.log("Configuration wird abgerufen.")
 			var xhr = new XMLHttpRequest();
-			xhr.open("GET","sendColor?r="+ r + "&g=" + g + "&b=" + b + "&fancyMode=" + fancyMode, true);
+			xhr.open("GET","getConfig", true);
 			xhr.onload = function() {
 				if (xhr.readyState === 4) {
 					if (xhr.status === 200) {
 						console.log('Antwort OK ' + xhr.responseText);
+						var jsonObj = JSON.parse(xhr.responseText);
+						colorPicker.color.rgb = { r: jsonObj.red, g: jsonObj.grn, b: jsonObj.blu };
+						if (jsonObj.fancyMode == "true") {
+							document.getElementById("fancyModeSwitch").checked = true;
+						}
 					}
 					else if (xhr.status !== 200) {
 						console.log('Request failed.  Returned status of ' + xhr.status);
@@ -161,6 +189,7 @@ var colorPicker = new iro.ColorPicker("#picker", {
 			};
 		    xhr.send();
 		}
+
 
 // listen to a color picker's color:change event
 // color:change callbacks receive the current color
