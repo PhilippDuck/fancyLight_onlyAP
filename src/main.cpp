@@ -4,12 +4,18 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <LittleFS.h>
+#include <Adafruit_NeoPixel.h>
 
 // Define name and password from Acces Point
 #ifndef APSSID
 #define APSSID "myFancyLight"
 #define APPSK "passwort"
 #endif
+#define LEDPIN 2
+#define NUMLED 5
+
+// Tell neopixel libary used pin and amount of leds
+Adafruit_NeoPixel leds(NUMLED, LEDPIN, NEO_GRB + NEO_KHZ800);
 
 // Set these to your desired credentials.
 const char *ssid = APSSID;
@@ -26,9 +32,80 @@ struct Config
   int grn = 255;
   int blu = 255;
 };
+int rainbowSpeed = 500;
 
 const char *nameConfigFile = "/config.txt";
 Config config; // <- global configuration object
+
+void setLedColor(int red, int grn, int blu, int speed)
+{
+  for (int i = 0; i < leds.numPixels(); i++)
+  { // For each pixel...
+    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+    // Here we're using a moderately bright green color:
+    leds.setPixelColor(i, leds.Color(red, grn, blu));
+    leds.show();  // Send the updated pixel colors to the hardware.
+    delay(speed); // Pause before next pass through loop
+  }
+}
+
+uint32_t Wheel(byte WheelPos)
+{
+  if (WheelPos < 85)
+  {
+    return leds.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+  }
+  else if (WheelPos < 170)
+  {
+    WheelPos -= 85;
+    return leds.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  else
+  {
+    WheelPos -= 170;
+    return leds.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+}
+
+void rainbowCycle(uint8_t wait)
+{
+  uint16_t i, j;
+
+  for (j = 0; j < 256 * 5; j++)
+  { // 5 cycles of all colors on wheel
+    for (i = 0; i < leds.numPixels(); i++)
+    {
+      leds.setPixelColor(i, Wheel(((i * 256 / leds.numPixels()) + j) & 255));
+    }
+    server.handleClient();
+    if (config.fancyMode == "false")
+    {
+      break;
+    }
+    leds.show();
+    delay(wait);
+  }
+}
+
+void rainbow(uint8_t wait)
+{
+  uint16_t i, j;
+
+  for (j = 0; j < 256; j++)
+  {
+    for (i = 0; i < leds.numPixels(); i++)
+    {
+      leds.setPixelColor(i, Wheel((i + j) & 255));
+    }
+    leds.show();
+    delay(wait);
+    server.handleClient();
+    if (config.fancyMode != "true")
+    {
+      break;
+    }
+  }
+}
 
 // Loads the configuration from a file
 void loadConfiguration(const char *filename, Config &config)
@@ -154,9 +231,11 @@ void setColor()
     }
   }*/
   server.send(200, "text/plain", "OK");
+  setLedColor(config.red, config.grn, config.blu, 0);
 }
 
-void getConfig() {
+void getConfig()
+{
   Serial.println("Konfiguration wird vom Webserver abgerufen.");
   String json = "{\"fancyMode\":\"" + config.fancyMode + "\",\"red\":" + config.red + ",\"grn\":" + config.grn + ",\"blu\":" + config.blu + "}";
   server.send(200, "text/plain", json);
@@ -185,6 +264,10 @@ void setup()
   // Load config
   loadConfiguration(nameConfigFile, config);
 
+  // Init leds
+  leds.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  setLedColor(0, 0, 0, 0);
+
   // Start Webserver and listen to requests
   server.serveStatic("/", LittleFS, "/index.html");
   server.serveStatic("/iromin.js", LittleFS, "/iromin.js");
@@ -198,4 +281,12 @@ void setup()
 void loop()
 {
   server.handleClient();
+  if (config.fancyMode == "true")
+  {
+    rainbowCycle(10);
+  }
+  else
+  {
+    setLedColor(config.red, config.grn, config.blu, 0);
+  }
 }

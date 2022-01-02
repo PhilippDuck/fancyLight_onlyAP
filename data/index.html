@@ -181,6 +181,8 @@
             colorPicker.color.rgb = { r: jsonObj.red, g: jsonObj.grn, b: jsonObj.blu };
             if (jsonObj.fancyMode == "true") {
               document.getElementById("fancyModeSwitch").checked = true;
+            } else {
+              document.getElementById("fancyModeSwitch").checked = false;
             }
           }
           else if (xhr.status !== 200) {
