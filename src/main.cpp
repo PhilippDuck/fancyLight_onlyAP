@@ -14,8 +14,13 @@
 #define LEDPIN 2
 #define NUMLED 5
 
+// Second strip
+#define SCNDLEDPIN 0
+#define SCNDNUMLEDS 8
+
 // Tell neopixel libary used pin and amount of leds
 Adafruit_NeoPixel leds(NUMLED, LEDPIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel secondStrip(SCNDNUMLEDS, SCNDLEDPIN, NEO_GRB + NEO_KHZ800);
 
 // Set these to your desired credentials.
 const char *ssid = APSSID;
@@ -266,6 +271,7 @@ void setup()
 
   // Init leds
   leds.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  secondStrip.begin();
   setLedColor(0, 0, 0, 0);
 
   // Start Webserver and listen to requests
